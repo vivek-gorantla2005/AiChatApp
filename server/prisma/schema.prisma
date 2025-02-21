@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(uuid()) 
+  username   String    @unique
+  email      String    @unique
+  password   String
+  token      String?
+  createdAt  DateTime  @default(now())
+
+  followers        Friendship[] @relation("UserFollowers")
+  following        Friendship[] @relation("UserFollowings")
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+
+  notifications    Notification[] @relation("UserNotifications")
+  NotificationSender Notification[] @relation("SenderNotifications")
+
+  Userconversations    Conversation[] @relation("User1Conversations")
+  Friendconversations    Conversation[] @relation("User2Conversations")
+
+  messagesSent     Message[] @relation("SenderMessages")
+  messagesReceived Message[] @relation("ReceiverMessages")
+
+  userStatus       UserStatus?
+}
+
+model Friendship {
+  id          String  @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id])
+  following User @relation("UserFollowings", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId]) 
+}
+
+model FriendRequest {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  status     RequestStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+
+  sender   User  @relation("SentRequests", fields: [senderId], references: [id])
+  receiver User  @relation("ReceivedRequests", fields: [receiverId], references: [id])
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Notification {
+  id         String          @id @default(uuid())
+  userId     String
+  senderId   String
+  type       NotificationType
+  message    String
+  isRead     Boolean         @default(false)
+  createdAt  DateTime        @default(now())
+
+  user       User            @relation("UserNotifications", fields: [userId], references: [id])
+  sender     User            @relation("SenderNotifications", fields: [senderId], references: [id])
+}
+
+enum NotificationType {
+  FRIEND_REQUEST
+  MESSAGE
+  SYSTEM_ALERT
+  MENTION
+}
+
+model Conversation {
+  id         String   @id @default(uuid())
+  user1Id    String
+  user2Id    String
+  createdAt  DateTime @default(now())
+
+  user1      User @relation("User1Conversations", fields: [user1Id], references: [id])
+  user2      User @relation("User2Conversations", fields: [user2Id], references: [id])
+
+  messages   Message[]
+
+  @@unique([user1Id, user2Id]) 
+}
+
+model Message {
+  id             String     @id @default(uuid())
+  conversationId String
+  senderId       String
+  receiverId     String
+  text           String?
+  messageType    MessageType
+  isRead         Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+
+  sender         User       @relation("SenderMessages", fields: [senderId], references: [id])
+  receiver       User       @relation("ReceiverMessages", fields: [receiverId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  attachment     Attachment?
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  GIF
+  VIDEO
+  FILE
+}
+
+model Attachment {
+  id         String   @id @default(uuid())
+  messageId  String   @unique
+  url        String
+  fileType   AttachmentType
+  createdAt  DateTime @default(now())
+
+  message    Message  @relation(fields: [messageId], references: [id])
+}
+
+enum AttachmentType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  AUDIO
+}
+
+model UserStatus {
+  id         String  @id @default(uuid())
+  userId     String  @unique
+  isOnline   Boolean @default(false)
+  lastSeen   DateTime?
+
+  user       User    @relation(fields: [userId], references: [id])
+}
