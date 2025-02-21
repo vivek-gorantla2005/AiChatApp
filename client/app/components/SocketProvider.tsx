@@ -35,27 +35,26 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     newSocket.on("connect", () => {
-      console.log("✅ Connected to WebSocket");
+      console.log("Connected to WebSocket");
       newSocket.emit("user_online", session.user.id);
     });
 
-    // Handle incoming messages
     newSocket.on("receiveMessage", (message: Message) => {
-      console.log("📩 New message received:", message);
+      console.log("New message received:", message);
 
-      // Add message globally
+  
       setMessages((prev) => [...prev, message]);
 
-      // Update specific conversation dynamically
+  
       setConversations((prev) => ({
         ...prev,
         [message.senderId]: [...(prev[message.senderId] || []), message],
       }));
     });
 
-    // Handle notifications
+ 
     newSocket.on("new_notification", (notification: Notification) => {
-      console.log("🔔 New notification:", notification);
+      console.log("New notification:", notification);
       setNotifications((prev) => [...prev, notification]);
     });
 

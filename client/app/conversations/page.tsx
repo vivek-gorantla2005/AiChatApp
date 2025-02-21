@@ -24,10 +24,8 @@ const ConversationsPage = () => {
   const [messageInput, setMessageInput] = useState("");
   const chatRef = useRef<HTMLDivElement>(null);
 
-  // Get socket context
   const { socket, messages, setMessages, conversations } = useSocket();
 
-  // Fetch Friends
   useEffect(() => {
     const fetchFriends = async () => {
       if (!session?.user?.id) return;
@@ -44,7 +42,7 @@ const ConversationsPage = () => {
     fetchFriends();
   }, [session?.user?.id]);
 
-  // Scroll chat to bottom when messages update
+  
   useEffect(() => {
     if (chatRef.current) {
       setTimeout(() => {
@@ -53,7 +51,7 @@ const ConversationsPage = () => {
     }
   }, [messages]);
 
-  // Send Message
+
   const sendMessage = async () => {
     if (!messageInput.trim() || !selectedUser || !session) return;
   
@@ -66,15 +64,14 @@ const ConversationsPage = () => {
       createdAt: new Date().toISOString(),
     };
   
-    // Ensure messages appear immediately by updating conversations object
+   
     setMessages((prev) => ({
       ...prev,
       [selectedUser.id]: [...(prev[selectedUser.id] || []), messageData], // Append message to selected user's conversation
     }));
   
     setMessageInput("");
-  
-    // Emit message via WebSocket
+
     socket?.emit("sendMessage", messageData);
   
     try {
@@ -113,11 +110,10 @@ const ConversationsPage = () => {
         )}
       </div>
 
-      {/* Chat Section */}
       <div className="w-3/4 flex flex-col bg-white p-6">
         {selectedUser ? (
           <>
-            {/* Chat Messages */}
+         
             <div ref={chatRef} className="flex-1 overflow-y-auto bg-gray-50 p-4 rounded-lg" style={{ maxHeight: "65vh" }}>
               {(conversations[selectedUser.id] || []).map((msg, index) => (
                 <div key={index} className={`mb-3 flex ${msg.senderId === session?.user?.id ? "justify-end" : "justify-start"}`}>
@@ -132,7 +128,7 @@ const ConversationsPage = () => {
               ))}
             </div>
 
-            {/* Message Input */}
+          
             <div className="mt-4 flex">
               <input
                 type="text"

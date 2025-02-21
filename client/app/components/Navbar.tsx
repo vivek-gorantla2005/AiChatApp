@@ -15,22 +15,18 @@ const Navbar = () => {
 
   return (
     <div className="navbar flex justify-between p-4 relative">
-      {/* Left Section */}
       <div className="flex items-center gap-2">
         <a className="font-mono text-3xl font-extrabold">ChatPro</a>
         <img src="/logo.jpg" className="w-10 h-10" alt="Logo" />
       </div>
 
-      {/* Right Section */}
       <div className="flex items-center gap-4">
-        {/* Search Box */}
         <input
           type="text"
           placeholder="Search"
           className="input input-bordered w-24 md:w-auto"
         />
 
-        {/* Notifications */}
         <div className="relative cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
           <Bell size={24} className="text-gray-600" />
           {notifications.length > 0 && (
@@ -40,7 +36,6 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Notification Dropdown */}
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -68,8 +63,6 @@ const Navbar = () => {
             </button>
           </motion.div>
         )}
-
-        {/* User Dropdown */}
         {session?.user ? (
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">

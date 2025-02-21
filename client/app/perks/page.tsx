@@ -23,26 +23,38 @@ export default function Page() {
   const [goal, setGoal] = useState("");
   const [goalProgress, setGoalProgress] = useState(0);
   const [isSettingGoal, setIsSettingGoal] = useState(false);
-  const conversationKeywords = ["code", "JavaScript", "React", "learning"]; // Example keywords
+  const [chatInput, setChatInput] = useState("");
+  const [messages, setMessages] = useState<{ timestamp: string; sender: string; text: string }[]>([]);
 
-  // Track goal-related conversations
-  const trackConversation = (userMessage: string) => {
-    const matched = conversationKeywords.some((word) =>
-      userMessage.toLowerCase().includes(word)
-    );
+  const sendMessage = async () => {
+    if (!chatInput.trim() || !goal) return;
 
-    if (matched) {
-      setGoalProgress((prev) => Math.min(prev + 10, 100)); 
-    } else {
-      setGoalProgress((prev) => Math.max(prev - 5, 0));
+    const newMessage = { timestamp: new Date().toISOString(), sender: "User", text: chatInput };
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
+    setChatInput("");
+
+    try {
+      const response = await fetch("http://127.0.0.1:5001/track_progress/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: updatedMessages, goal }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setGoalProgress(data.progress);
+      } else {
+        console.error("Error:", data.error);
+      }
+    } catch (error) {
+      console.error("API Error:", error);
     }
   };
 
   return (
     <div className="grid grid-cols-2 gap-6 p-6 min-h-screen bg-gray-100">
-      {/* Left Section: Badge System & Goal Tracker */}
       <div className="flex flex-col gap-6">
-        {/* Badge System */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle>🏅 Badge System</CardTitle>
@@ -59,7 +71,6 @@ export default function Page() {
           </CardContent>
         </Card>
 
-        {/* Goal Tracker */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle>🎯 Goal Tracker</CardTitle>
@@ -79,7 +90,6 @@ export default function Page() {
           </CardContent>
         </Card>
 
-        {/* Goal Setting Modal */}
         {isSettingGoal && (
           <Card className="shadow-lg">
             <CardHeader>
@@ -97,7 +107,6 @@ export default function Page() {
         )}
       </div>
 
-      {/* Right Section: Achievements & Chat Tracker */}
       <div className="flex flex-col gap-6">
         {/* Achievements */}
         <Card className="shadow-lg">
@@ -114,7 +123,31 @@ export default function Page() {
               ))}
             </ul>
           </CardContent>
-        </Card>        
+        </Card>
+
+        {/* Chat Input & Progress Tracker */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle>💬 Chat Tracker</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4">
+              <div className="h-40 overflow-y-auto border p-2 bg-gray-50 rounded-md">
+                {messages.map((msg, index) => (
+                  <p key={index} className="text-sm">
+                    <span className="font-semibold">{msg.sender}:</span> {msg.text}
+                  </p>
+                ))}
+              </div>
+              <Input
+                placeholder="Type a message..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+              />
+              <Button onClick={sendMessage}>Send</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from transformers import pipeline
 from collections import defaultdict
 
-print("Loading models... This will only happen once.")
 sentiment_model = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment")
 intent_model = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 
