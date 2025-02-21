@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS  
 from transformers import pipeline
 import spacy
 import nltk
@@ -9,7 +9,6 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app) 
 
-# Load models
 summarizer = pipeline('summarization', model="facebook/bart-large-cnn")
 nlp = spacy.load('en_core_web_sm')
 nltk.download('vader_lexicon')
